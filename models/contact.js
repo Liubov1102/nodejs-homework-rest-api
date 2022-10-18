@@ -2,38 +2,46 @@ const { Schema, model } = require('mongoose');
 const Joi = require('joi');
 const { handleSaveErrors } = require('../helpers');
 
+const emailRegexp = /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/;
+
 const contactSchema = new Schema({
-    name: {
-      type: String,
-      required: [true, 'Set name for contact'],
-    },
-    email: {
-      type: String,
-    },
-    phone: {
-      type: String,
-    },
-    favorite: {
-      type: Boolean,
-      default: false,
-    },
-}, {versionKey: false, timestamps: true})
+  name: {
+    type: String,
+    required: [true, 'Set name for contact'],
+  },
+  email: {
+    type: String,
+    match: emailRegexp,
+  },
+  phone: {
+    type: String,
+  },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: 'user',
+  },
+}, { versionKey: false, timestamps: true });
+
 contactSchema.post('save', handleSaveErrors);
 
 const addSchema = Joi.object({
-    name: Joi.string().required(),
-    email: Joi.string().required(),
-    phone: Joi.string().required(),
-    favorite: Joi.boolean(),
+  name: Joi.string().required(),
+  email: Joi.string().pattern(emailRegexp).required(),
+  phone: Joi.string().required(),
+  favorite: Joi.boolean(),
 });
 
 const updateFavoriteSchema = Joi.object({
-    favorite: Joi.boolean().required(),
+  favorite: Joi.boolean().required(),
 });
 
 const schemas = {
-    addSchema,
-    updateFavoriteSchema,
+  addSchema,
+  updateFavoriteSchema,
 };
 
 const Contact = model('contact', contactSchema);
